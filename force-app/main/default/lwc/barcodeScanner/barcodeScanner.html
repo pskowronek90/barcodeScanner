@@ -1,0 +1,17 @@
+<template>
+    <div class="slds-card">
+        <div class="slds-box">
+            <lightning-button variant="brand" label="Skanuj kod QR" title="Skanuj kod QR" 
+                onclick={handleBarcodeClick} class="slds-m-left_x-small"> 
+            </lightning-button>
+            <p class="slds-m-left_x-small"> 
+                <!-- {scannedBarcode}<br> -->
+                Obecny user: {userName}<br>
+                Email: {userEmail}<br>
+            </p>
+            <p class="statusCheck">
+                Status: {status}
+            </p>
+        </div> 
+    </div>
+</template>

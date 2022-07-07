@@ -4,13 +4,16 @@
             <lightning-button variant="brand" label="Skanuj kod QR" title="Skanuj kod QR" 
                 onclick={handleBarcodeClick} class="slds-m-left_x-small"> 
             </lightning-button>
-            <p class="slds-m-left_x-small"> 
-                <!-- {scannedBarcode}<br> -->
-                Obecny user: {userName}<br>
+            <h3>Dane weryfikującego</h3>
+            <p class="slds-m-left_x-small">  
+                Imię i nazwisko: {userName}<br>
                 Email: {userEmail}<br>
-            </p>
-            <p class="statusCheck">
-                Status: {status}
+            </p><br><br>
+            <h3>Weryfikacja kodu QR</h3>
+            <p class="statusCheck slds-m-left_x-small">
+                Imię i nazwisko: {accountName}<br>
+                Status: {status}<br>
+                Data zeskanowania: {statusCheck}<br>
             </p>
         </div> 
     </div>

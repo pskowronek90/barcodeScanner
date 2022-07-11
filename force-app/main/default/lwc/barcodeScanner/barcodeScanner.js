@@ -1,67 +1,62 @@
 import Id from '@salesforce/user/Id';
-import { getRecord } from 'lightning/uiRecordApi';
+import { getFieldValue, getRecord } from 'lightning/uiRecordApi';
 import { updateRecord } from "lightning/uiRecordApi";
-import { LightningElement, wire } from 'lwc';
+import { LightningElement, api, wire } from 'lwc';
 import { getBarcodeScanner } from 'lightning/mobileCapabilities';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import ID_FIELD from '@salesforce/schema/User.Id';
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import EMAIL_FIELD from '@salesforce/schema/User.Email';
-import CODE_SCANNED_FIELD from '@salesforce/schema/User.CodeScanned__c';
-
+import VOUCHER_ID from '@salesforce/schema/Voucher__c.Id'
+import VOUCHER_ACCOUNT from '@salesforce/schema/Voucher__c.Account__r.Name'
+import VOUCHER_SCAN_DATE from '@salesforce/schema/Voucher__c.ScanDate__c'
 
 export default class Barcode_api_demo extends LightningElement {
     userId = Id;
     userName = '';
     userEmail = ''
-    codeScanned = ''
-    status = '';
+
+    voucherId = '';
+    voucherAccount = '';
+    scanDate = ''
+    status = ''
     
     connectedCallback() {
         this.myScanner = getBarcodeScanner(); 
     }
 
-    @wire(getRecord, { recordId: Id, fields: [NAME_FIELD, EMAIL_FIELD, CODE_SCANNED_FIELD ]})
+    @wire(getRecord, { recordId: Id, fields: [NAME_FIELD, EMAIL_FIELD]})
     userDetails({error, data}) {
         if (data) {
             this.userName = data.fields.Name.value;
             this.userEmail = data.fields.Email.value;
-            this.codeScanned = data.fields.CodeScanned__c.value;
         } else if (error) {
             this.error = error ;
         }
     }
-
-    /**
-     * Method executed on click of Barcode scan button
-     * @param event 
-     */
-    handleBarcodeClick(event){ 
+    
+    async handleBarcodeClick(event){ 
         if(this.myScanner.isAvailable()) {
             const scanningOptions = {
                 barcodeTypes: [this.myScanner.barcodeTypes.QR],
                 instructionText: 'Skanuj kod QR',
                 successText: 'Skanowanie zakończone.'
-            }; 
+            };
+
             this.myScanner.beginCapture(scanningOptions)
             .then((result) => { 
-                var statusCheck = this.codeScanned;
-
-                if (statusCheck != null) {
-                    this.template.querySelector(".statusCheck").style="color:red";
-                    this.status = 'Kod zeskanowano ' + statusCheck;
-                } else {
-                    this.updateCurrentUser();
-                        
-                    this.template.querySelector(".statusCheck").style="color:green";
-                    this.status = 'OK';
-                } 
+                this.voucherId = result.value
+                this.voucherAccount = this.getVoucherAccount();
+                this.scanDate = this.getVoucherScanDate();
+                
+                
+                // updateVoucher(); temporary disabled
             }).catch((error) => { 
                 this.showError('error',error);
             }).finally(() => {
                 this.myScanner.endCapture();
             }); 
-        }
+        } 
         else {
             this.showError('Błąd','To urządzenie nie wspiera skanowania');
         }
@@ -86,23 +81,35 @@ export default class Barcode_api_demo extends LightningElement {
      * Helper function to get current date
      */
     generateTimeStamp() {
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-        var yyyy = today.getFullYear();
+        var timeStamp = new Date();
+        var current = timeStamp.toLocaleString();
 
-        today = mm + '/' + dd + '/' + yyyy;
-        return today;
+        return current;
     }
+
+    splitVoucher(code) {
+        var voucher = code.split(";");
+
+        return voucher;
+    }
+
+    @wire(getRecord, {recordId: '$voucherId', fields: [VOUCHER_ACCOUNT, VOUCHER_SCAN_DATE]}) record;
+        getVoucherAccount() {
+            return this.record.data ? getFieldValue(this.record.data, VOUCHER_ACCOUNT) : '?';
+        }
+
+        getVoucherScanDate() {
+            return this.record.data ? getFieldValue(this.record.data, VOUCHER_SCAN_DATE) : '?';
+        }
 
     /**
      * Separate method to perform status od CodeScanned for currently logged-in User.
      */
-    updateCurrentUser() {
+    updateVoucher() {
         const fields = {};
 
-        fields[ID_FIELD.fieldApiName] = Id;
-        fields[CODE_SCANNED_FIELD.fieldApiName] = this.generateTimeStamp();
+        fields[VOUCHER_ID.fieldApiName] = this.voucherId;
+        fields[VOUCHER_SCAN_DATE.fieldApiName] = this.generateTimeStamp();
 
         const recordInput = {
             fields: fields

@@ -1,7 +1,7 @@
 import Id from '@salesforce/user/Id';
 import { getFieldValue, getRecord } from 'lightning/uiRecordApi';
 import { updateRecord } from "lightning/uiRecordApi";
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire, track } from 'lwc';
 import { getBarcodeScanner } from 'lightning/mobileCapabilities';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import ID_FIELD from '@salesforce/schema/User.Id';
@@ -15,11 +15,10 @@ export default class Barcode_api_demo extends LightningElement {
     userId = Id;
     userName = '';
     userEmail = ''
-
-    voucherId = '';
-    voucherAccount = '';
-    scanDate = ''
-    status = ''
+    
+    @track voucherId = '';
+    @track voucherAccount = '';
+    @track scanDate = ''
     
     connectedCallback() {
         this.myScanner = getBarcodeScanner(); 
@@ -48,7 +47,7 @@ export default class Barcode_api_demo extends LightningElement {
                 this.voucherId = result.value
                 this.voucherAccount = this.getVoucherAccount();
                 this.scanDate = this.getVoucherScanDate();
-                
+
                 
                 // updateVoucher(); temporary disabled
             }).catch((error) => { 

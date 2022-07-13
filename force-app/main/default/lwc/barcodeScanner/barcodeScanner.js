@@ -34,7 +34,11 @@ export default class Barcode_api_demo extends LightningElement {
         }
     }
     
-    async handleBarcodeClick(event){ 
+    /**
+     * 
+     * @param event 
+     */
+    handleBarcodeClick(event){ 
         if(this.myScanner.isAvailable()) {
             const scanningOptions = {
                 barcodeTypes: [this.myScanner.barcodeTypes.QR],

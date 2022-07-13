@@ -12,18 +12,21 @@ import VOUCHER_ACCOUNT from '@salesforce/schema/Voucher__c.Account__r.Name'
 import VOUCHER_SCAN_DATE from '@salesforce/schema/Voucher__c.ScanDate__c'
 
 export default class Barcode_api_demo extends LightningElement {
+    @api recordId;
+    
     userId = Id;
     userName = '';
     userEmail = ''
     
-    @track voucherId = '';
-    @track voucherAccount = '';
-    @track scanDate = ''
+    voucherId = '';
+    voucherAccount = '';
+    scanDate = ''
     
     connectedCallback() {
         this.myScanner = getBarcodeScanner(); 
     }
 
+    // User data
     @wire(getRecord, { recordId: Id, fields: [NAME_FIELD, EMAIL_FIELD]})
     userDetails({error, data}) {
         if (data) {
@@ -31,6 +34,17 @@ export default class Barcode_api_demo extends LightningElement {
             this.userEmail = data.fields.Email.value;
         } else if (error) {
             this.error = error ;
+        }
+    }
+
+    // Voucher data
+    @wire(getRecord, {recordId: '$voucherId', fields: [VOUCHER_ACCOUNT, VOUCHER_SCAN_DATE]})
+    getVoucherData({data, error}) {
+        if (data) {
+            this.voucherAccount = getFieldValue(data, VOUCHER_ACCOUNT);
+            this.scanDate = getFieldValue(data, VOUCHER_SCAN_DATE);
+        } else if (error) {
+            this.error = 'error';
         }
     }
     
@@ -49,11 +63,7 @@ export default class Barcode_api_demo extends LightningElement {
             this.myScanner.beginCapture(scanningOptions)
             .then((result) => { 
                 this.voucherId = result.value
-                this.voucherAccount = this.getVoucherAccount();
-                this.scanDate = this.getVoucherScanDate();
-
-                
-                // updateVoucher(); temporary disabled
+                // updateVoucher(); temporary disabled, move to wire
             }).catch((error) => { 
                 this.showError('error',error);
             }).finally(() => {
@@ -79,31 +89,11 @@ export default class Barcode_api_demo extends LightningElement {
         this.dispatchEvent(event);
     }
 
-    /**
-     * 
-     * Helper function to get current date
-     */
-    generateTimeStamp() {
-        var timeStamp = new Date();
-        var current = timeStamp.toLocaleString();
-
-        return current;
-    }
-
     splitVoucher(code) {
         var voucher = code.split(";");
 
         return voucher;
     }
-
-    @wire(getRecord, {recordId: '$voucherId', fields: [VOUCHER_ACCOUNT, VOUCHER_SCAN_DATE]}) record;
-        getVoucherAccount() {
-            return this.record.data ? getFieldValue(this.record.data, VOUCHER_ACCOUNT) : '?';
-        }
-
-        getVoucherScanDate() {
-            return this.record.data ? getFieldValue(this.record.data, VOUCHER_SCAN_DATE) : '?';
-        }
 
     /**
      * Separate method to perform status od CodeScanned for currently logged-in User.
@@ -120,4 +110,15 @@ export default class Barcode_api_demo extends LightningElement {
 
         updateRecord(recordInput);
     }
+
+        /**
+     * 
+     * Helper function to get current date
+     */
+         generateTimeStamp() {
+            var timeStamp = new Date();
+            var current = timeStamp.toLocaleString();
+    
+            return current;
+        }
 }

@@ -42,14 +42,19 @@ export default class Barcode_api_demo extends LightningElement {
     getVoucherData({data, error}) {
         if (data) {
             this.voucherAccount = getFieldValue(data, VOUCHER_ACCOUNT);
-            this.scanDate = getFieldValue(data, VOUCHER_SCAN_DATE);
+            var scanDateCheck = getFieldValue(data, VOUCHER_SCAN_DATE);
+            
+            if (scanDateCheck == '' || scanDateCheck == null) {
+                this.updateVoucher();
+            } else {
+                this.scanDate = scanDateCheck.toString();
+            }
         } else if (error) {
             this.error = 'error';
         }
     }
     
     /**
-     * 
      * @param event 
      */
     handleBarcodeClick(event){ 
@@ -63,7 +68,6 @@ export default class Barcode_api_demo extends LightningElement {
             this.myScanner.beginCapture(scanningOptions)
             .then((result) => { 
                 this.voucherId = result.value
-                // updateVoucher(); temporary disabled, move to wire
             }).catch((error) => { 
                 this.showError('error',error);
             }).finally(() => {
@@ -111,7 +115,7 @@ export default class Barcode_api_demo extends LightningElement {
         updateRecord(recordInput);
     }
 
-        /**
+    /**
      * 
      * Helper function to get current date
      */

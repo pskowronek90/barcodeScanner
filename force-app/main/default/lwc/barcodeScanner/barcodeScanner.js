@@ -7,9 +7,11 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import EMAIL_FIELD from '@salesforce/schema/User.Email';
 import VOUCHER_ID from '@salesforce/schema/Voucher__c.Id'
+import VOUCHER_NAME from '@salesforce/schema/Voucher__c.Name'
 import VOUCHER_ACCOUNT from '@salesforce/schema/Voucher__c.Account__r.Name'
 import VOUCHER_SCAN_DATE from '@salesforce/schema/Voucher__c.ScanDate__c'
 import VOUCHER_CONFIRMED_BY from '@salesforce/schema/Voucher__c.ConfirmedBy__c'
+import VOUCHER_SECRET_CODE from '@salesforce/schema/Voucher__c.SecretCode__c'
 
 export default class Barcode_api_demo extends LightningElement {
     @api recordId;
@@ -19,8 +21,10 @@ export default class Barcode_api_demo extends LightningElement {
     userEmail = ''
     
     voucherId = '';
+    voucherName = '';
     voucherAccount = '';
     scanDate = ''
+    secretCode = ''
     
     connectedCallback() {
         this.myScanner = getBarcodeScanner(); 
@@ -38,19 +42,23 @@ export default class Barcode_api_demo extends LightningElement {
     }
 
     // Voucher data
-    @wire(getRecord, {recordId: '$voucherId', fields: [VOUCHER_ACCOUNT, VOUCHER_SCAN_DATE]})
+    @wire(getRecord, {recordId: '$voucherId', fields: [VOUCHER_NAME, VOUCHER_ACCOUNT, VOUCHER_SCAN_DATE, VOUCHER_SECRET_CODE]})
     getVoucherData({data, error}) {
         if (data) {
+            this.voucherName = getFieldValue(data, VOUCHER_NAME);
             this.voucherAccount = getFieldValue(data, VOUCHER_ACCOUNT);
+            this.secretCode = getFieldValue(data, VOUCHER_SECRET_CODE);
+
             var scanDateCheck = getFieldValue(data, VOUCHER_SCAN_DATE);
             
             if (scanDateCheck == '' || scanDateCheck == null) {
-                this.updateVoucher();
+                this.template.querySelector(".verify").style="display: block;";
             } else {
                 this.scanDate = scanDateCheck.toString();
+                this.showToast('Uwaga', 'Kod został już odebrany', 'warning');
             }
         } else if (error) {
-            this.error = 'error';
+            this.showToast('Błąd', 'Nie znaleziono vouchera', 'error');
         }
     }
     
@@ -69,34 +77,41 @@ export default class Barcode_api_demo extends LightningElement {
             .then((result) => { 
                 this.voucherId = result.value
             }).catch((error) => { 
-                this.showError('error',error);
+                this.showToast('Błąd', error, 'error');
             }).finally(() => {
                 this.myScanner.endCapture();
             }); 
         } 
         else {
-            this.showError('Błąd','To urządzenie nie wspiera skanowania');
+            this.showToast('Błąd', 'To urządzenie nie wspiera skanowania', 'error');
         }
     }
 
-    /**
-     * Utility method to show error message
-     * @param  title 
-     * @param  msg 
-     */
-    showError(title,msg) {
-        const event = new ShowToastEvent({
-            title: title,
-            message: msg,
-            error : 'error'
-        });
-        this.dispatchEvent(event);
+    verifySecretCodeClick(event) {
+        var secretCodeInput = this.template.querySelector(".verification-code").value;
+        
+        if (secretCodeInput != null && secretCodeInput != '') {
+            if (secretCodeInput == this.secretCode) {
+                this.updateVoucher();
+                this.showToast('Weryfikacja pomyślna', 'Tożsamość potwierdzona', 'success');
+
+                this.template.querySelector(".verify").style="visibility: hidden;";
+            } else {
+                this.showToast('Weryfikacja nieudana', 'Kod nieprawidłowy', 'error');
+            }
+        } else {
+            this.showToast("Uwaga", 'Uzupełnij pole z kodem', 'info');
+        }
     }
 
-    splitVoucher(code) {
-        var voucher = code.split(";");
-
-        return voucher;
+    showToast(title, message, variant) {
+        const event = new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant,
+            mode: 'dismissable'
+        });
+        this.dispatchEvent(event);
     }
 
     /**
@@ -120,10 +135,10 @@ export default class Barcode_api_demo extends LightningElement {
      * 
      * Helper function to get current date
      */
-         generateTimeStamp() {
-            var timeStamp = new Date();
-            var current = timeStamp.toLocaleString();
+    generateTimeStamp() {
+        var timeStamp = new Date();
+        var current = timeStamp.toLocaleString();
     
-            return current;
-        }
+        return current;
+    }
 }

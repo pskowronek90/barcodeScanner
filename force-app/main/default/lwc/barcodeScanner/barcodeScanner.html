@@ -1,20 +1,22 @@
 <template>
-    <div class="slds-card">
-        <div class="slds-box">
-            <lightning-button variant="brand" label="Skanuj kod QR" title="Skanuj kod QR" 
-                onclick={handleBarcodeClick} class="slds-m-left_x-small"> 
-            </lightning-button>
-            <h3>Dane weryfikującego</h3>
-            <p class="slds-m-left_x-small">  
-                Imię i nazwisko: {userName}<br>
-                Email: {userEmail}<br>
-            </p><br><br>
-            <h3>Weryfikacja kodu QR</h3>
-            <p class="statusCheck slds-m-left_x-small">
-                VoucherID: {voucherId}<br>
-                Imię i nazwisko: {voucherAccount}<br>
-                Data zeskanowania: <span class="scan-date">{scanDate}</span><br>
+    <lightning-card  variant="Narrow"  title="Dane weryfikującego"  icon-name="standard:user">
+        <p class="slds-p-horizontal_small">{userName} ({userEmail})</p><br>
+        <lightning-button variant="brand" label="Skanuj kod QR" title="Skanuj kod QR" 
+        onclick={handleBarcodeClick} class="slds-m-left_x-small"> 
+        </lightning-button>
+        </lightning-card><br>
+
+        <lightning-card  variant="Narrow"  title="Dane vouchera"  icon-name="standard:webcart">
+            <p class="slds-p-horizontal_small">VoucherID: {voucherId}</p>
+            <p class="slds-p-horizontal_small">Nazwa: {voucherName}</p>
+            <p class="slds-p-horizontal_small">Odbiorca: {voucherAccount}</p>
+            <p class="slds-p-horizontal_small">Zeskanowano: {scanDate}</p>
+
+            <p class="verify" style="visibility: hidden;">
+                <lightning-input class="verification-code" type="text" placeholder="Potwierdź swoją tożsamość"></lightning-input>
+                <lightning-button variant="brand" label="Potwierdź kod" title="Potwierdź kod" onclick={verifySecretCodeClick}></lightning-button> 
             </p>
-        </div> 
-    </div>
+        </lightning-card><br>
+            
+        
 </template>

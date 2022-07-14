@@ -4,12 +4,12 @@ import { updateRecord } from "lightning/uiRecordApi";
 import { LightningElement, api, wire, track } from 'lwc';
 import { getBarcodeScanner } from 'lightning/mobileCapabilities';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import ID_FIELD from '@salesforce/schema/User.Id';
 import NAME_FIELD from '@salesforce/schema/User.Name';
 import EMAIL_FIELD from '@salesforce/schema/User.Email';
 import VOUCHER_ID from '@salesforce/schema/Voucher__c.Id'
 import VOUCHER_ACCOUNT from '@salesforce/schema/Voucher__c.Account__r.Name'
 import VOUCHER_SCAN_DATE from '@salesforce/schema/Voucher__c.ScanDate__c'
+import VOUCHER_CONFIRMED_BY from '@salesforce/schema/Voucher__c.ConfirmedBy__c'
 
 export default class Barcode_api_demo extends LightningElement {
     @api recordId;
@@ -107,6 +107,7 @@ export default class Barcode_api_demo extends LightningElement {
 
         fields[VOUCHER_ID.fieldApiName] = this.voucherId;
         fields[VOUCHER_SCAN_DATE.fieldApiName] = this.generateTimeStamp();
+        fields[VOUCHER_CONFIRMED_BY.fieldApiName] = this.userId;
 
         const recordInput = {
             fields: fields

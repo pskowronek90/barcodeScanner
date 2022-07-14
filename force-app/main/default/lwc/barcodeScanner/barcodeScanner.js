@@ -13,7 +13,7 @@ import VOUCHER_SCAN_DATE from '@salesforce/schema/Voucher__c.ScanDate__c'
 import VOUCHER_CONFIRMED_BY from '@salesforce/schema/Voucher__c.ConfirmedBy__c'
 import VOUCHER_SECRET_CODE from '@salesforce/schema/Voucher__c.SecretCode__c'
 
-export default class Barcode_api_demo extends LightningElement {
+export default class BarcodeScanner extends LightningElement {
     @api recordId;
     
     userId = Id;

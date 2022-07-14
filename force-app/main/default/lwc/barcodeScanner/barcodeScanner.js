@@ -58,6 +58,8 @@ export default class BarcodeScanner extends LightningElement {
                 this.showToast('Uwaga', 'Kod został już odebrany', 'warning');
             }
         } else if (error) {
+            this.showToast('Błąd', error, 'error');
+        } else {
             this.showToast('Błąd', 'Nie znaleziono vouchera', 'error');
         }
     }
